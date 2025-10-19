@@ -1,3 +1,9 @@
 venv/
 **/ipynb_checkpoints/
 **/data/crime_data/Crimes_-_2001_to_Present.csv
+ipynb_checkpoints
+.DS_Store
+*.pyc
+#instructions/*
+#.github
+ABNBVENV
