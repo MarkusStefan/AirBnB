@@ -3,7 +3,7 @@
 <div align="center">
 
 # Wrangle & Profile Report:<br> Chicago Airbnb Visual Data Science Project
-*Markus Köfler | 26th October 2025*
+*Markus Köfler | 11th November 2025*
 </div>
 
 ## Wrangle Stage
@@ -34,17 +34,17 @@ The raw datasets required several cleaning and preprocessing steps to ensure the
 
 ### Visual Assessment of Data Quality
 
-To get a holistic view of the integrated data and perform a visual sanity check, I overlaid the different geographic layers on a single map of Chicago. This visualization was a key step in the data quality assessment.
+An example assessment every Data Scienteist should perform during EDA is to plot feature distributions and outliers. Below is such an example using histograms and box plots to visualize the distribution of Airbnb prices after data cleaning.
 
 <div align="center">
-<img src="../imgs/02_wrangle_price_distribution_cleaned.png" alt="Map of Chicago with Airbnb listings and crime data" width="800"/>
+<img src="../imgs/02_wrangle_price_distribution_cleaned.png" alt="Map of Chicago with Airbnb listings and crime data" width="830"/>
 </div>
 
-This map plots the boundaries of Chicago's census tracts (white polygons), the locations of all Airbnb listings (blue dots), and the locations of filtered homicide incidents (red dots).
+<br>
 
 **Quality Insights from the Visualization:**
 
-1.  **Geographic Coherence**: The plot immediately confirms that the vast majority of the residence life in the northern districts of the city. This served as a quick sanity check that the spatial joins were performed correctly, as the Airbnb listings and crime incidents align well with known urban patterns in Chicago.
+1.  **Geographic Coherence**: The plot immediately confirms that the vast majority of the residence life in the northern districts of the city. This served as a quick sanity check that the spatial joins were performed correctly, as the Airbnb listings and crime incidents align well with known urban patterns in Chicago (x- and y-axis may be ignored).
 <div align="center">
 <img src="../imgs/popdensity.png" alt="Zoomed-in map of Chicago with Airbnb listings and crime data" width="500" height="340"/>
 </div>
@@ -58,17 +58,17 @@ This map plots the boundaries of Chicago's census tracts (white polygons), the l
 </div>
 
 
-
+<br> <br> <br> <br>
 
 ## Profile Stage
 
 ### Insight 1: A Tale of Two Cities: The Geographic Divide of AirBnBs and Crime
 
-The exploratory analysis revealed a noticeable geographic separation between the concentration of Airbnb listings and the prevalence of serious crime (homicide in this case). AirBnBs are clustered in the northern half of the city, particularly along the lakefront and in the downtown area. In contrast, the filtered homicide data shows a much higher density in the southern and western parts of Chicago. This spatial disparity is a fundamental characteristic of the city's Airbnb market. While high Airbnb density can lead to increased competition among hosts, the analysis later showed that crime density is a significant predictor of Airbnb prices, highlighting how safety perceptions can influence the market.
+The exploratory analysis revealed a noticeable geographic separation between the concentration of Airbnb listings and the prevalence of serious crime (homicide in this case). AirBnBs are clustered in the northern half of the city, particularly along the lakefront and in the downtown area. In contrast, the filtered homicide data shows a much higher density in the southern and western parts of Chicago. 
+This spatial disparity is a fundamental characteristic of the city's Airbnb market. While high Airbnb density can lead to increased competition among hosts, the analysis later showed that crime density is a significant predictor of Airbnb prices, highlighting how safety perceptions can influence the market.
 
 <div align="center">
-<img src="../imgs/rentals_crimes.png" alt="Zoomed-in map of Chicago with Airbnb listings and crime data" width="380" height="500"/>
-*Visualization showing the distinct geographic distributions of Airbnb listings and crime incidents.*
+<img src="../imgs/rentals_crimes.png" alt="Zoomed-in map of Chicago with Airbnb listings and crime data" width="300" height="400"/>
 </div>
 
 
@@ -76,11 +76,31 @@ The exploratory analysis revealed a noticeable geographic separation between the
 
 Airbnb prices vary significantly across Chicago. By dividing the city into a grid and calculating the average price of listings within each cell, I was able to create a price heatmap. This visualization clearly shows that the most expensive areas are concentrated in the central business district (The Loop) and extend northwards through affluent neighborhoods like Lincoln Park and Lake View. Prices generally decrease as one moves further south or west from the city center. This geographic pricing structure is a key insight for potential hosts and travelers, demonstrating that location is a primary driver of cost in the Chicago market.
 
-<div align="center">
-<img src="../imgs/avgprice-grids.png" alt="Choropleth map of Chicago showing the average Airbnb price per grid cell" width="500" height="500"/>
-Heatmap of Chicago showing that the highest average Airbnb prices are in the city center and northern neighborhoods.
+Furthermore, when looking at the landscape and the distribution of green spaces (parks, lakeshores), boulevards and riverwalks, there does not seem to be a direct correlation between proximity to these amenities and higher Airbnb prices. While such features may enhance the attractiveness of a neighborhood, they do not appear to significantly influence pricing on their own. It seems like those perks would rather be relevant for residential real estate prices than for short-term rentals like AirBnBs.
+
+<div style="display: flex; justify-content: center; align-items: center; gap: 20px;">
+  <div>
+   <img src="../imgs/avgprice-grids.png" alt="Choropleth map of Chicago showing the average Airbnb price per grid cell" width="350" height="420"/>
+  </div>
+  <div>
+    <img src="../imgs/land.png" alt="Actual vs Predicted Prices" width="550" height="500"/>
+  </div>
 </div>
 
 
+
+### Insight 3: Proximity to City Center Drives Airbnb Prices
+The analysis revealed a clear relationship between the distance from the city center and Airbnb prices. As shown in the violin plots below, listings located closer to the *Loop* tend to have higher average prices, while those further away are generally more affordable. This trend underscores the importance of location in determining rental rates, with proximity to key attractions and business districts being a significant factor for both hosts and guests. It must however be accounted for the high variance in prices at all distance levels, indicating that while location is crucial, other factors (such as amenities, property type, and neighborhood characteristics) also play important roles in pricing.
+
+Furthermore, the violin plots on the right illustrate the price distribution of various neighborhoods. It is evident from there that neighborhoods like Near North Side and Loop command the highest prices, while areas such as Uptown and Lower West Side are on the lower end of the spectrum. This neighborhood-level analysis is somewhat linked to the information provided above, where location is just a mediator influenced by other variables such as safety, accessibility, local amenities, and proximity.
+
+<div style="display: flex; justify-content: center; align-items: center; gap: 20px;">
+  <div>
+    <img src="../imgs/03_profile_insight1_price_by_distance_violin.png" alt="Feature Importance" width="500" height="300"/>
+  </div>
+  <div>
+    <img src="../imgs/loc_price_dist.png" alt="Actual vs Predicted Prices" width="580" height="250"/>
+  </div>
+</div>
 
 </span>
