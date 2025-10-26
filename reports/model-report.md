@@ -3,7 +3,7 @@
 <div align="center">
 
 # Modelling:<br> Chicago Airbnb Visual Data Science Project
-*Markus Köfler | 4th December 2025*
+*Markus Köfler | 11th December 2025*
 </div>
 
 ### Modeling Approach
