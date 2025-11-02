@@ -1,0 +1,65 @@
+<!DOCTYPE html><html lang="en"><head><script type="importmap">{"imports":{"d3lhD":"/chicago_timeseries.f51998ad.js","fuUfT":"/chicago_neighborhoods.96a0b982.geojson"}}</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chicago AirBnB &amp; Crime Evolution</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/topojson@3"></script>
+    <link rel="stylesheet" href="/chicago-map.4d663569.css">
+</head>
+<body>
+    <div id="container">
+        <div id="header">
+            <h1>🏙️ Chicago: AirBnB Rentals &amp; Crime Evolution</h1>
+            <div id="subtitle">Interactive Time-Series Visualization with Geographic Context (2018-2024)</div>
+        </div>
+
+        <div id="viz-container">
+            <div id="loading">
+                <div class="spinner"></div>
+                Loading Chicago map and data...
+            </div>
+            <svg id="map"></svg>
+
+            <div id="legend" style="display: none">
+                <h3 style="margin-bottom: 15px">Legend</h3>
+                <div class="legend-item">
+                    <div class="legend-dot airbnb-dot"></div>
+                    <span>AirBnB Rental</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot crime-dot"></div>
+                    <span>Homicide</span>
+                </div>
+                <div style="border-top: 1px solid #fff3; margin-top: 15px; padding-top: 15px">
+                    <small>💡 Scroll to zoom<br>🖱️ Drag to pan</small>
+                </div>
+            </div>
+
+            <div id="stats" style="display: none">
+                <div class="stat-item">
+                    <div>AirBnB Listings</div>
+                    <div class="stat-value airbnb-color" id="airbnb-count">0</div>
+                </div>
+                <div class="stat-item">
+                    <div>Crime Incidents</div>
+                    <div class="stat-value crime-color" id="crime-count">0</div>
+                </div>
+            </div>
+
+            <div id="controls" style="display: none">
+                <button id="play-btn">▶️</button>
+                <div id="timeline">
+                    <div id="timeline-progress"></div>
+                </div>
+                <div id="period-label">2018-01</div>
+                <button id="reset-zoom" title="Reset zoom">🔍</button>
+            </div>
+        </div>
+
+        <div class="tooltip" id="tooltip"></div>
+    </div>
+
+    <script type="module" src="/chicago-map.46ca8e26.js"></script>
+
+
+</body></html>

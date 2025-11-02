@@ -1,0 +1,233 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: white;
+    overflow: hidden;
+}
+
+#container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#header {
+    padding: 20px;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    z-index: 10;
+}
+
+h1 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+#subtitle {
+    font-size: 1.2em;
+    opacity: 0.9;
+}
+
+#viz-container {
+    flex: 1;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+}
+
+#map:active {
+    cursor: grabbing;
+}
+
+.neighborhood {
+    fill: rgba(100, 120, 150, 0.3);
+    stroke: rgba(255, 255, 255, 0.5);
+    stroke-width: 0.5px;
+    transition: fill 0.3s;
+}
+
+.neighborhood:hover {
+    fill: rgba(120, 140, 170, 0.5);
+}
+
+.water {
+    fill: rgba(30, 60, 114, 0.4);
+    stroke: rgba(60, 100, 150, 0.6);
+    stroke-width: 1px;
+}
+
+#controls {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px);
+    padding: 20px 40px;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    z-index: 100;
+}
+
+#play-btn, #reset-zoom {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    transition: transform 0.2s;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+#play-btn:hover, #reset-zoom:hover {
+    transform: scale(1.1);
+}
+
+#reset-zoom {
+    font-size: 18px;
+}
+
+#timeline {
+    width: 400px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    cursor: pointer;
+    position: relative;
+}
+
+#timeline-progress {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    border-radius: 4px;
+    width: 0%;
+    transition: width 0.3s;
+}
+
+#period-label {
+    font-size: 1.4em;
+    font-weight: bold;
+    min-width: 120px;
+    text-align: center;
+}
+
+#legend {
+    position: absolute;
+    top: 100px;
+    right: 40px;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    z-index: 100;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+    gap: 10px;
+}
+
+.legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.airbnb-dot { background: #4CAF50; }
+.crime-dot { background: #F44336; }
+
+#stats {
+    position: absolute;
+    top: 100px;
+    left: 40px;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    min-width: 200px;
+    z-index: 100;
+}
+
+.stat-item {
+    margin: 10px 0;
+    font-size: 1.1em;
+}
+
+.stat-value {
+    font-size: 1.8em;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+.airbnb-color { color: #4CAF50; }
+.crime-color { color: #F44336; }
+
+.point {
+    cursor: pointer;
+    transition: r 0.2s;
+}
+
+.tooltip {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    pointer-events: none;
+    font-size: 0.9em;
+    display: none;
+    z-index: 1000;
+    max-width: 250px;
+}
+
+#loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.5em;
+    text-align: center;
+    z-index: 50;
+}
+
+.spinner {
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid white;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
