@@ -14,6 +14,8 @@ let isPlaying = false;
 let animationInterval = null;
 let data = null;
 let zoom = null;
+let globalColorScale = null;
+let globalAirbnbScale = null;
 
 // create svg
 const svg = d3.select("#map")
@@ -118,14 +120,17 @@ function updateVisualization(periodIndex) {
     const progress = (periodIndex / (data.periods.length - 1)) * 100;
     d3.select("#timeline-progress").style("width", `${progress}%`);
 
-    const airbnbPeriod = data.airbnb[periodIndex];
+    // airbnb is a snapshot (same for all periods)
+    const airbnbData = data.airbnb;
     const crimePeriod = data.crimes[periodIndex];
 
-    d3.select("#airbnb-count").text(airbnbPeriod.count);
+    d3.select("#airbnb-count").text(airbnbData.count);
     d3.select("#crime-count").text(crimePeriod.count);
 
+    console.log(`Period ${period}: ${crimePeriod.count} crimes, ${airbnbData.count} airbnbs`);
+
     // prepare data for density visualization
-    const airbnbPoints = airbnbPeriod.locations.map(d => ({
+    const airbnbPoints = airbnbData.locations.map(d => ({
         x: projection([d.lon, d.lat])[0],
         y: projection([d.lon, d.lat])[1],
         data: d
@@ -142,38 +147,36 @@ function updateVisualization(periodIndex) {
         .x(d => d.x)
         .y(d => d.y)
         .size([config.width, config.height])
-        .bandwidth(20)
-        .thresholds(15)
+        .bandwidth(25)
+        .thresholds(20)
         (crimePoints);
 
-    // color scale for crime density
-    const colorScale = d3.scaleSequential(d3.interpolateReds)
-        .domain([0, d3.max(densityData, d => d.value)]);
+    console.log(`Generated ${densityData.length} crime density contours`);
 
-    // update crime density contours
+    // update crime density contours with proper key function
     const contours = crimeLayer
         .selectAll(".crime-contour")
-        .data(densityData);
+        .data(densityData, (d, i) => i);
 
     contours.exit()
         .transition()
-        .duration(300)
+        .duration(400)
         .style("opacity", 0)
         .remove();
 
-    contours.enter()
+    const contoursEnter = contours.enter()
         .append("path")
         .attr("class", "crime-contour")
-        .attr("d", d3.geoPath())
-        .attr("fill", d => colorScale(d.value))
+        .attr("fill", d => globalColorScale(d.value))
         .attr("stroke", "none")
-        .style("opacity", 0)
-        .merge(contours)
+        .style("opacity", 0);
+
+    contoursEnter.merge(contours)
         .transition()
-        .duration(500)
+        .duration(600)
         .attr("d", d3.geoPath())
-        .attr("fill", d => colorScale(d.value))
-        .style("opacity", 0.4);
+        .attr("fill", d => globalColorScale(d.value))
+        .style("opacity", 0.5);
 
     // update airbnb points as hexbins for better density visualization
     const hexbinGenerator = d3.hexbin()
@@ -184,27 +187,23 @@ function updateVisualization(periodIndex) {
 
     const hexbins = hexbinGenerator(airbnbPoints);
 
-    // color scale for airbnb density
-    const airbnbColorScale = d3.scaleSequential(d3.interpolateGreens)
-        .domain([0, d3.max(hexbins, d => d.length)]);
+    console.log(`Generated ${hexbins.length} airbnb hexbins`);
 
-    // update airbnb hexbins
+    // update airbnb hexbins with proper key function
     const hexagons = airbnbLayer
         .selectAll(".airbnb-hex")
-        .data(hexbins);
+        .data(hexbins, d => `${d.x}-${d.y}`);
 
     hexagons.exit()
         .transition()
-        .duration(300)
+        .duration(400)
         .style("opacity", 0)
         .remove();
 
-    hexagons.enter()
+    const hexagonsEnter = hexagons.enter()
         .append("path")
         .attr("class", "airbnb-hex")
         .attr("d", hexbinGenerator.hexagon())
-        .attr("transform", d => `translate(${d.x},${d.y})`)
-        .attr("fill", d => airbnbColorScale(d.length))
         .attr("stroke", "#2E7D32")
         .attr("stroke-width", 0.5)
         .style("opacity", 0)
@@ -220,7 +219,7 @@ function updateVisualization(periodIndex) {
                 .html(`
                     <strong>AirBnB Cluster</strong><br>
                     Listings: ${d.length}<br>
-                    Avg Price: $${avgPrice.toFixed(0)}
+                    Avg Price: $${avgPrice ? avgPrice.toFixed(0) : 'N/A'}
                 `)
                 .style("left", (event.pageX + 10) + "px")
                 .style("top", (event.pageY - 10) + "px");
@@ -233,12 +232,13 @@ function updateVisualization(periodIndex) {
                 .style("opacity", 0.6);
             
             tooltip.style("display", "none");
-        })
-        .merge(hexagons)
+        });
+
+    hexagonsEnter.merge(hexagons)
         .transition()
-        .duration(500)
+        .duration(600)
         .attr("transform", d => `translate(${d.x},${d.y})`)
-        .attr("fill", d => airbnbColorScale(d.length))
+        .attr("fill", d => globalAirbnbScale(d.length))
         .style("opacity", 0.6);
 }
 
@@ -288,6 +288,53 @@ async function initialize() {
         
         // load timeseries data from relative path
         data = await d3.json('./data/chicago_timeseries.json');
+        
+        // calculate global max values for consistent color scales
+        let maxCrimeDensity = 0;
+        let maxAirbnbCluster = 0;
+        
+        // airbnb is same for all periods (snapshot)
+        const airbnbPoints = data.airbnb.locations.map(d => ({
+            x: projection([d.lon, d.lat])[0],
+            y: projection([d.lon, d.lat])[1]
+        }));
+        
+        const hexbinGenerator = d3.hexbin()
+            .x(d => d.x)
+            .y(d => d.y)
+            .radius(15)
+            .extent([[0, 0], [config.width, config.height]]);
+        
+        const airbnbHexbins = hexbinGenerator(airbnbPoints);
+        maxAirbnbCluster = d3.max(airbnbHexbins, d => d.length) || 0;
+        
+        data.periods.forEach((period, i) => {
+            const crimePoints = data.crimes[i].locations.map(d => ({
+                x: projection([d.lon, d.lat])[0],
+                y: projection([d.lon, d.lat])[1]
+            }));
+            
+            // calculate density for this period
+            const densityData = d3.contourDensity()
+                .x(d => d.x)
+                .y(d => d.y)
+                .size([config.width, config.height])
+                .bandwidth(25)
+                .thresholds(20)
+                (crimePoints);
+            
+            const maxDensity = d3.max(densityData, d => d.value) || 0;
+            maxCrimeDensity = Math.max(maxCrimeDensity, maxDensity);
+        });
+        
+        // create global color scales
+        globalColorScale = d3.scaleSequential(d3.interpolateReds)
+            .domain([0, maxCrimeDensity]);
+        
+        globalAirbnbScale = d3.scaleSequential(d3.interpolateGreens)
+            .domain([0, maxAirbnbCluster]);
+        
+        console.log(`Global scales - Crime density max: ${maxCrimeDensity}, AirBnB cluster max: ${maxAirbnbCluster}`);
         
         // hide loading, show UI
         d3.select("#loading").style("display", "none");
