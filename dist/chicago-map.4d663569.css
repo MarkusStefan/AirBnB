@@ -80,7 +80,10 @@ h1 {
 #date-display {
   color: #333;
   font-variant-numeric: tabular-nums;
-  pointer-events: none;
+  text-align: right;
+  background: #fffc;
+  border-radius: 8px;
+  padding: 10px;
   font-size: 48px;
   font-weight: bold;
   position: absolute;
@@ -88,7 +91,90 @@ h1 {
   right: 30px;
 }
 
+#period-label {
+  margin-bottom: 5px;
+}
+
+#time-slider {
+  pointer-events: auto;
+  width: 200px;
+}
+
 .crime-dot {
   pointer-events: none;
+}
+
+.switch {
+  width: 40px;
+  height: 20px;
+  margin-right: 10px;
+  display: inline-block;
+  position: relative;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  cursor: pointer;
+  background-color: #ccc;
+  transition: all .4s;
+  position: absolute;
+  inset: 0;
+}
+
+.slider:before {
+  content: "";
+  background-color: #fff;
+  width: 16px;
+  height: 16px;
+  transition: all .4s;
+  position: absolute;
+  bottom: 2px;
+  left: 2px;
+}
+
+input:checked + .slider {
+  background-color: #2196f3;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196f3;
+}
+
+input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+.control-item {
+  align-items: center;
+  margin-bottom: 5px;
+  display: flex;
+}
+
+#play-pause-btn {
+  color: #fff;
+  cursor: pointer;
+  background: #333;
+  border: none;
+  border-radius: 4px;
+  width: 100%;
+  padding: 5px 15px;
+  font-size: 12px;
+}
+
+#play-pause-btn:hover {
+  background: #555;
 }
 /*# sourceMappingURL=chicago-map.4d663569.css.map */

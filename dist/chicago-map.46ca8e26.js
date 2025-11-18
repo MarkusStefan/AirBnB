@@ -764,6 +764,9 @@ let activeCrimeTypes = new Set([
     'ROBBERY',
     'BURGLARY'
 ]);
+let isPlaying = true;
+let isDensityMode = false;
+let currentIndex = 0;
 async function init() {
     // 1. Draw Map
     console.log("Drawing map...");
@@ -782,36 +785,110 @@ async function init() {
         g.selectAll("path").data(features).join("path").attr("d", path).attr("fill", "#e0e0e0").attr("stroke", "#ffffff").attr("stroke-width", 1.5);
         console.log("Map drawn.");
     } else console.error("No features to draw.");
+    // Zoom Behavior
+    const zoom = _d3.zoom().scaleExtent([
+        1,
+        8
+    ]).on("zoom", (event)=>{
+        g.attr("transform", event.transform);
+    });
+    svg.call(zoom);
     // 2. Prepare Data
     let data = (0, _chicagoTimeseriesJsonDefault.default);
     if ((0, _chicagoTimeseriesJsonDefault.default).default) data = (0, _chicagoTimeseriesJsonDefault.default).default;
-    // Flatten data for easier animation? 
-    // The current structure is by period. That's fine.
     const periods = data.periods;
     const crimes = data.crimes;
+    // Setup Slider
+    const slider = _d3.select("#time-slider").attr("max", periods.length - 1).on("input", function() {
+        currentIndex = +this.value;
+        isPlaying = false;
+        _d3.select("#play-pause-btn").text("Play");
+        renderFrame(currentIndex);
+    });
+    // Setup Play/Pause
+    _d3.select("#play-pause-btn").on("click", function() {
+        isPlaying = !isPlaying;
+        _d3.select(this).text(isPlaying ? "Pause" : "Play");
+        if (isPlaying) update();
+    });
+    // Setup Density Toggle
+    _d3.select("#density-toggle").on("change", function() {
+        isDensityMode = this.checked;
+        // Clear existing visualizations
+        g.selectAll(".crime-dot").remove();
+        g.selectAll(".density-path").remove();
+        renderFrame(currentIndex);
+    });
     // 3. Animation Loop
-    let i = 0;
     const label = _d3.select("#period-label");
-    function update() {
-        if (i >= periods.length) i = 0; // Loop
-        const period = periods[i];
-        const crimeData = crimes[i];
+    function renderFrame(index) {
+        if (index >= periods.length) index = 0;
+        const period = periods[index];
+        const crimeData = crimes[index];
         label.text(period);
+        slider.property("value", index);
         // Filter
         const points = crimeData.locations.filter((d)=>activeCrimeTypes.has(d.type));
-        // Draw Points
-        const circles = g.selectAll(".crime-dot").data(points, (d, index)=>i + "-" + index); // Unique key per frame to ensure new dots
-        // ENTER: New dots appear
-        circles.enter().append("circle").attr("class", "crime-dot").attr("cx", (d)=>projection([
-                d.lon,
-                d.lat
-            ])[0]).attr("cy", (d)=>projection([
-                d.lon,
-                d.lat
-            ])[1]).attr("r", 0).attr("fill", (d)=>colorScale(d.type)).attr("opacity", 0.8).transition().duration(500).attr("r", 4).transition().duration(1000).attr("r", 0).attr("opacity", 0).remove(); // Remove after fading out
-        // We don't keep old dots, we just let them flash and fade.
-        // This creates a "pulse" of crime for that period.
-        i++;
+        if (isDensityMode) {
+            // Density Visualization
+            g.selectAll(".crime-dot").remove(); // Clear pulsing dots
+            g.selectAll(".crime-dot-static").remove(); // Clear static dots
+            const densityData = _d3.contourDensity().x((d)=>projection([
+                    d.lon,
+                    d.lat
+                ])[0]).y((d)=>projection([
+                    d.lon,
+                    d.lat
+                ])[1]).size([
+                width,
+                height
+            ]).bandwidth(20) // Adjust for smoothness
+            .thresholds(20)(points);
+            const densityColor = _d3.scaleSequential(_d3.interpolateInferno).domain([
+                0,
+                _d3.max(densityData, (d)=>d.value)
+            ]);
+            g.selectAll(".density-path").data(densityData).join("path").attr("class", "density-path").attr("d", _d3.geoPath()).attr("fill", (d)=>densityColor(d.value)).attr("opacity", 0.6);
+        } else {
+            // Points Visualization
+            g.selectAll(".density-path").remove(); // Clear density
+            if (isPlaying) {
+                // Pulse Animation Mode
+                g.selectAll(".crime-dot-static").remove(); // Clear static dots
+                const circles = g.selectAll(".crime-dot").data(points, (d, i)=>index + "-" + i); // Unique key per frame
+                circles.enter().append("circle").attr("class", "crime-dot").attr("cx", (d)=>projection([
+                        d.lon,
+                        d.lat
+                    ])[0]).attr("cy", (d)=>projection([
+                        d.lon,
+                        d.lat
+                    ])[1]).attr("r", 0).attr("fill", (d)=>colorScale(d.type)).attr("opacity", 0.8).transition().duration(500).attr("r", 4).transition().duration(1000).attr("r", 0).attr("opacity", 0).remove();
+            } else {
+                // Static Mode (Paused/Scrubbing)
+                // Remove pulsing dots to avoid clutter
+                g.selectAll(".crime-dot").remove();
+                const staticCircles = g.selectAll(".crime-dot-static").data(points);
+                staticCircles.join((enter)=>enter.append("circle").attr("class", "crime-dot-static").attr("cx", (d)=>projection([
+                            d.lon,
+                            d.lat
+                        ])[0]).attr("cy", (d)=>projection([
+                            d.lon,
+                            d.lat
+                        ])[1]).attr("r", 4).attr("fill", (d)=>colorScale(d.type)).attr("opacity", 0.8), (update)=>update.attr("cx", (d)=>projection([
+                            d.lon,
+                            d.lat
+                        ])[0]).attr("cy", (d)=>projection([
+                            d.lon,
+                            d.lat
+                        ])[1]).attr("fill", (d)=>colorScale(d.type)), (exit)=>exit.remove());
+            }
+        }
+    }
+    function update() {
+        if (!isPlaying) return;
+        if (currentIndex >= periods.length) currentIndex = 0;
+        renderFrame(currentIndex);
+        currentIndex++;
         setTimeout(()=>requestAnimationFrame(update), 800); // Speed of animation
     }
     update();
@@ -826,6 +903,8 @@ async function init() {
             activeCrimeTypes.add(type);
             el.style("opacity", 1);
         }
+        // Re-render current frame to reflect filter change immediately
+        renderFrame(currentIndex > 0 ? currentIndex - 1 : 0);
     });
 }
 init();

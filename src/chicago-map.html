@@ -24,10 +24,26 @@
                 <div class="legend-item crime-filter" data-type="ROBBERY"><div class="legend-dot" style="background: #1976d2;"></div><span>Robbery</span></div>
                 <div class="legend-item crime-filter" data-type="BURGLARY"><div class="legend-dot" style="background: #7b1fa2;"></div><span>Burglary</span></div>
                 <div style="margin-top: 10px; font-size: 0.8em; color: #666;">Click to filter</div>
+                
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+                
+                <h3>Controls</h3>
+                <div class="control-item">
+                    <label class="switch">
+                        <input type="checkbox" id="density-toggle">
+                        <span class="slider round"></span>
+                    </label>
+                    <span>Density View</span>
+                </div>
+                
+                <div class="control-item" style="margin-top: 10px;">
+                    <button id="play-pause-btn">Pause</button>
+                </div>
             </div>
 
             <div id="date-display">
                 <div id="period-label">Loading...</div>
+                <input type="range" id="time-slider" min="0" max="100" value="0" style="width: 100%; margin-top: 10px;">
             </div>
         </div>
     </div>
