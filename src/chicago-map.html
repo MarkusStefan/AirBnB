@@ -26,24 +26,22 @@
 
             <div id="legend" style="display: none;">
                 <h3 style="margin-bottom: 15px;">Legend</h3>
-                <div class="legend-item">
-                    <div class="legend-dot airbnb-dot"></div>
-                    <span>AirBnB Rental</span>
+                <!-- Dynamic Crime Legend -->
+                <div style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
+                    <small style="color: #666; display: block; margin-bottom: 5px;">CRIME TYPES (Click to Filter)</small>
+                    <div class="legend-item crime-filter" data-type="HOMICIDE" style="cursor: pointer;"><div class="legend-dot" style="background: #d32f2f;"></div><span>Homicide</span></div>
+                    <div class="legend-item crime-filter" data-type="BATTERY" style="cursor: pointer;"><div class="legend-dot" style="background: #f57c00;"></div><span>Battery</span></div>
+                    <div class="legend-item crime-filter" data-type="ASSAULT" style="cursor: pointer;"><div class="legend-dot" style="background: #fbc02d;"></div><span>Assault</span></div>
+                    <div class="legend-item crime-filter" data-type="ROBBERY" style="cursor: pointer;"><div class="legend-dot" style="background: #1976d2;"></div><span>Robbery</span></div>
+                    <div class="legend-item crime-filter" data-type="BURGLARY" style="cursor: pointer;"><div class="legend-dot" style="background: #7b1fa2;"></div><span>Burglary</span></div>
                 </div>
-                <div class="legend-item">
-                    <div class="legend-dot crime-dot"></div>
-                    <span>Homicide</span>
-                </div>
-                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.2);">
+                
+                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
                     <small>💡 Scroll to zoom<br>🖱️ Drag to pan</small>
                 </div>
             </div>
 
             <div id="stats" style="display: none;">
-                <div class="stat-item">
-                    <div>AirBnB Listings</div>
-                    <div class="stat-value airbnb-color" id="airbnb-count">0</div>
-                </div>
                 <div class="stat-item">
                     <div>Crime Incidents</div>
                     <div class="stat-value crime-color" id="crime-count">0</div>
@@ -63,6 +61,6 @@
         <div class="tooltip" id="tooltip"></div>
     </div>
 
-    <script src="visualization.js"></script>
+    <script type="module" src="visualization.js"></script>
 </body>
 </html>

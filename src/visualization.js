@@ -1,12 +1,21 @@
 // D3 is loaded globally via CDN script tag in HTML
 // no need to import
 
+// Import data directly to ensure Parcel bundles it correctly
+import geoData from './data/chicago_neighborhoods.geojson';
+import timeSeriesData from './data/chicago_timeseries.json';
+
 // configuration
 const config = {
     width: window.innerWidth,
     height: window.innerHeight - 120,
     margin: { top: 20, right: 20, bottom: 20, left: 20 }
 };
+
+// Define color scale for crime types
+const crimeColorScale = d3.scaleOrdinal()
+    .domain(['HOMICIDE', 'BATTERY', 'ASSAULT', 'ROBBERY', 'BURGLARY'])
+    .range(['#d32f2f', '#f57c00', '#fbc02d', '#1976d2', '#7b1fa2']);
 
 // state
 let currentPeriodIndex = 0;
@@ -15,7 +24,7 @@ let animationInterval = null;
 let data = null;
 let zoom = null;
 let globalColorScale = null;
-let globalAirbnbScale = null;
+let activeCrimeTypes = new Set(['HOMICIDE', 'BATTERY', 'ASSAULT', 'ROBBERY', 'BURGLARY']);
 
 // create svg
 const svg = d3.select("#map")
@@ -28,7 +37,7 @@ const g = svg.append("g");
 // create layers
 const mapLayer = g.append("g").attr("class", "map-layer");
 const crimeLayer = g.append("g").attr("class", "crime-layer");
-const airbnbLayer = g.append("g").attr("class", "airbnb-layer");
+// const airbnbLayer = g.append("g").attr("class", "airbnb-layer"); // Removed
 
 // setup projection for Chicago
 const projection = d3.geoMercator()
@@ -53,19 +62,41 @@ const tooltip = d3.select("#tooltip");
 // load Chicago neighborhood boundaries from GeoJSON
 async function loadChicagoMap() {
     try {
-        // load from relative path
-        const response = await fetch('./data/chicago_neighborhoods.geojson');
-        if (!response.ok) throw new Error('Could not load neighborhood map');
-        const geoData = await response.json();
+        let features = null;
         
+        // Handle Parcel behavior: it might return a URL (string) or the JSON object
+        // When using type="module", Parcel usually bundles JSON as an object if imported directly
+        // But sometimes it might be a URL if configured as a static asset
+        
+        if (typeof geoData === 'string') {
+            console.log("Loading map from URL:", geoData);
+            const response = await fetch(geoData);
+            if (!response.ok) throw new Error('Failed to fetch map data');
+            const json = await response.json();
+            features = json.features;
+        } else if (geoData && (geoData.features || geoData.type === 'FeatureCollection')) {
+            console.log("Loading map from imported object");
+            features = geoData.features;
+        } else if (geoData && geoData.default) {
+             // Handle ES module default export if wrapped
+             console.log("Loading map from default export");
+             features = geoData.default.features;
+        } else {
+            console.log("Unknown geoData format:", geoData);
+            throw new Error("Invalid GeoJSON data structure");
+        }
+
+        if (!features) throw new Error("No features found in map data");
+
         // draw neighborhoods
-        mapLayer.selectAll("path")
-            .data(geoData.features)
+        const neighborhoods = mapLayer.selectAll("path")
+            .data(features)
             .join("path")
             .attr("class", "neighborhood")
-            .attr("d", path)
-            .on("mouseover", function(event, d) {
-                d3.select(this).attr("fill", "rgba(140, 160, 190, 0.6)");
+            .attr("d", path);
+            
+        neighborhoods.on("mouseover", function(event, d) {
+                d3.select(this).attr("class", "neighborhood hover");
                 if (d.properties && d.properties.name) {
                     tooltip.style("display", "block")
                         .html(`<strong>${d.properties.name}</strong>`)
@@ -74,12 +105,13 @@ async function loadChicagoMap() {
                 }
             })
             .on("mouseout", function() {
-                d3.select(this).attr("fill", "rgba(100, 120, 150, 0.3)");
+                d3.select(this).attr("class", "neighborhood");
                 tooltip.style("display", "none");
             });
         
-        console.log("✅ Chicago map loaded with neighborhoods");
+        console.log(`✅ Chicago map loaded with ${features.length} neighborhoods`);
     } catch (error) {
+        console.error("Error loading map:", error);
         console.log("⚠️ Could not load detailed neighborhood map, using simplified boundary");
         drawSimplifiedChicago();
     }
@@ -105,8 +137,8 @@ function drawSimplifiedChicago() {
         .datum(chicagoBounds)
         .attr("class", "neighborhood")
         .attr("d", path)
-        .style("fill", "rgba(100, 120, 150, 0.2)")
-        .style("stroke", "rgba(255, 255, 255, 0.5)")
+        .style("fill", "#f0f0f0")
+        .style("stroke", "#ccc")
         .style("stroke-width", "2px");
 }
 
@@ -120,126 +152,79 @@ function updateVisualization(periodIndex) {
     const progress = (periodIndex / (data.periods.length - 1)) * 100;
     d3.select("#timeline-progress").style("width", `${progress}%`);
 
-    // airbnb is a snapshot (same for all periods)
-    const airbnbData = data.airbnb;
     const crimePeriod = data.crimes[periodIndex];
 
-    d3.select("#airbnb-count").text(airbnbData.count);
-    d3.select("#crime-count").text(crimePeriod.count);
+    // --- CRIME SCATTERS ---
+    
+    // Project coordinates and filter
+    const crimePointsData = crimePeriod.locations
+        .filter(d => activeCrimeTypes.has(d.type))
+        .map(d => ({
+            ...d,
+            x: projection([d.lon, d.lat])[0],
+            y: projection([d.lon, d.lat])[1]
+        }));
 
-    console.log(`Period ${period}: ${crimePeriod.count} crimes, ${airbnbData.count} airbnbs`);
+    d3.select("#crime-count").text(crimePointsData.length);
 
-    // prepare data for density visualization
-    const airbnbPoints = airbnbData.locations.map(d => ({
-        x: projection([d.lon, d.lat])[0],
-        y: projection([d.lon, d.lat])[1],
-        data: d
-    }));
+    // Bind data
+    const crimeCircles = crimeLayer.selectAll(".crime-dot")
+        .data(crimePointsData, (d, i) => i); // Use index as key for simple transition
 
-    const crimePoints = crimePeriod.locations.map(d => ({
-        x: projection([d.lon, d.lat])[0],
-        y: projection([d.lon, d.lat])[1],
-        data: d
-    }));
-
-    // create density contours for crimes
-    const densityData = d3.contourDensity()
-        .x(d => d.x)
-        .y(d => d.y)
-        .size([config.width, config.height])
-        .bandwidth(25)
-        .thresholds(20)
-        (crimePoints);
-
-    console.log(`Generated ${densityData.length} crime density contours`);
-
-    // update crime density contours with proper key function
-    const contours = crimeLayer
-        .selectAll(".crime-contour")
-        .data(densityData, (d, i) => i);
-
-    contours.exit()
-        .transition()
-        .duration(400)
-        .style("opacity", 0)
+    // Exit
+    crimeCircles.exit()
+        .transition().duration(200)
+        .attr("r", 0)
+        .attr("opacity", 0)
         .remove();
 
-    const contoursEnter = contours.enter()
-        .append("path")
-        .attr("class", "crime-contour")
-        .attr("fill", d => globalColorScale(d.value))
-        .attr("stroke", "none")
-        .style("opacity", 0);
+    // Enter
+    const crimeEnter = crimeCircles.enter()
+        .append("circle")
+        .attr("class", "crime-dot")
+        .attr("cx", d => d.x)
+        .attr("cy", d => d.y)
+        .attr("r", 0)
+        .attr("fill", d => crimeColorScale(d.type))
+        .attr("opacity", 0.7);
 
-    contoursEnter.merge(contours)
-        .transition()
-        .duration(600)
-        .attr("d", d3.geoPath())
-        .attr("fill", d => globalColorScale(d.value))
-        .style("opacity", 0.5);
+    // Update (and Enter transition)
+    crimeEnter.merge(crimeCircles)
+        .transition().duration(500)
+        .attr("cx", d => d.x)
+        .attr("cy", d => d.y)
+        .attr("r", 3) // Small radius for scatter
+        .attr("fill", d => crimeColorScale(d.type));
 
-    // update airbnb points as hexbins for better density visualization
-    const hexbinGenerator = d3.hexbin()
-        .x(d => d.x)
-        .y(d => d.y)
-        .radius(15)
-        .extent([[0, 0], [config.width, config.height]]);
+    // Add tooltips to new points
+    crimeEnter.on("mouseover", function(event, d) {
+        d3.select(this).attr("r", 6).attr("stroke", "white");
+        tooltip.style("display", "block")
+            .html(`<strong>${d.type}</strong><br>Lat: ${d.lat.toFixed(3)}<br>Lon: ${d.lon.toFixed(3)}`)
+            .style("left", (event.pageX + 10) + "px")
+            .style("top", (event.pageY - 10) + "px");
+    }).on("mouseout", function() {
+        d3.select(this).attr("r", 3).attr("stroke", "none");
+        tooltip.style("display", "none");
+    });
+}
 
-    const hexbins = hexbinGenerator(airbnbPoints);
-
-    console.log(`Generated ${hexbins.length} airbnb hexbins`);
-
-    // update airbnb hexbins with proper key function
-    const hexagons = airbnbLayer
-        .selectAll(".airbnb-hex")
-        .data(hexbins, d => `${d.x}-${d.y}`);
-
-    hexagons.exit()
-        .transition()
-        .duration(400)
-        .style("opacity", 0)
-        .remove();
-
-    const hexagonsEnter = hexagons.enter()
-        .append("path")
-        .attr("class", "airbnb-hex")
-        .attr("d", hexbinGenerator.hexagon())
-        .attr("stroke", "#2E7D32")
-        .attr("stroke-width", 0.5)
-        .style("opacity", 0)
-        .on("mouseover", function(event, d) {
-            d3.select(this)
-                .transition()
-                .duration(150)
-                .style("stroke-width", 2)
-                .style("opacity", 0.9);
-            
-            const avgPrice = d3.mean(d, p => p.data.price);
-            tooltip.style("display", "block")
-                .html(`
-                    <strong>AirBnB Cluster</strong><br>
-                    Listings: ${d.length}<br>
-                    Avg Price: $${avgPrice ? avgPrice.toFixed(0) : 'N/A'}
-                `)
-                .style("left", (event.pageX + 10) + "px")
-                .style("top", (event.pageY - 10) + "px");
-        })
-        .on("mouseout", function() {
-            d3.select(this)
-                .transition()
-                .duration(150)
-                .style("stroke-width", 0.5)
-                .style("opacity", 0.6);
-            
-            tooltip.style("display", "none");
-        });
-
-    hexagonsEnter.merge(hexagons)
-        .transition()
-        .duration(600)
-        .attr("transform", d => `translate(${d.x},${d.y})`)
-        .attr("fill", d => globalAirbnbScale(d.length))
-        .style("opacity", 0.6);
+// setup legend interactions
+function setupLegendInteractions() {
+    d3.selectAll(".crime-filter").on("click", function() {
+        const type = d3.select(this).attr("data-type");
+        const element = d3.select(this);
+        
+        if (activeCrimeTypes.has(type)) {
+            activeCrimeTypes.delete(type);
+            element.style("opacity", 0.3);
+        } else {
+            activeCrimeTypes.add(type);
+            element.style("opacity", 1);
+        }
+        
+        updateVisualization(currentPeriodIndex);
+    });
 }
 
 // setup controls
@@ -286,55 +271,17 @@ async function initialize() {
         // load Chicago map
         await loadChicagoMap();
         
-        // load timeseries data from relative path
-        data = await d3.json('./data/chicago_timeseries.json');
-        
-        // calculate global max values for consistent color scales
-        let maxCrimeDensity = 0;
-        let maxAirbnbCluster = 0;
-        
-        // airbnb is same for all periods (snapshot)
-        const airbnbPoints = data.airbnb.locations.map(d => ({
-            x: projection([d.lon, d.lat])[0],
-            y: projection([d.lon, d.lat])[1]
-        }));
-        
-        const hexbinGenerator = d3.hexbin()
-            .x(d => d.x)
-            .y(d => d.y)
-            .radius(15)
-            .extent([[0, 0], [config.width, config.height]]);
-        
-        const airbnbHexbins = hexbinGenerator(airbnbPoints);
-        maxAirbnbCluster = d3.max(airbnbHexbins, d => d.length) || 0;
-        
-        data.periods.forEach((period, i) => {
-            const crimePoints = data.crimes[i].locations.map(d => ({
-                x: projection([d.lon, d.lat])[0],
-                y: projection([d.lon, d.lat])[1]
-            }));
-            
-            // calculate density for this period
-            const densityData = d3.contourDensity()
-                .x(d => d.x)
-                .y(d => d.y)
-                .size([config.width, config.height])
-                .bandwidth(25)
-                .thresholds(20)
-                (crimePoints);
-            
-            const maxDensity = d3.max(densityData, d => d.value) || 0;
-            maxCrimeDensity = Math.max(maxCrimeDensity, maxDensity);
-        });
-        
-        // create global color scales
-        globalColorScale = d3.scaleSequential(d3.interpolateReds)
-            .domain([0, maxCrimeDensity]);
-        
-        globalAirbnbScale = d3.scaleSequential(d3.interpolateGreens)
-            .domain([0, maxAirbnbCluster]);
-        
-        console.log(`Global scales - Crime density max: ${maxCrimeDensity}, AirBnB cluster max: ${maxAirbnbCluster}`);
+        // Handle Parcel behavior for timeseries data
+        if (typeof timeSeriesData === 'string') {
+            console.log("Loading timeseries from URL:", timeSeriesData);
+            data = await d3.json(timeSeriesData);
+        } else if (timeSeriesData && timeSeriesData.default) {
+             console.log("Loading timeseries from default export");
+             data = timeSeriesData.default;
+        } else {
+            console.log("Loading timeseries from imported object");
+            data = timeSeriesData;
+        }
         
         // hide loading, show UI
         d3.select("#loading").style("display", "none");
@@ -344,6 +291,7 @@ async function initialize() {
 
         // setup controls
         setupControls();
+        setupLegendInteractions();
 
         // initialize with first period
         updateVisualization(0);

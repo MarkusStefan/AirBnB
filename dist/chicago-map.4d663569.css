@@ -5,8 +5,8 @@
 }
 
 body {
-  color: #fff;
-  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  color: #333;
+  background: #fff;
   font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   overflow: hidden;
 }
@@ -22,12 +22,13 @@ body {
   text-align: center;
   backdrop-filter: blur(10px);
   z-index: 10;
-  background: #0000004d;
+  background: #ffffffe6;
+  border-bottom: 1px solid #eee;
   padding: 20px;
 }
 
 h1 {
-  text-shadow: 2px 2px 4px #00000080;
+  color: #1a1a1a;
   margin-bottom: 10px;
   font-size: 2.5em;
 }
@@ -57,14 +58,15 @@ h1 {
 }
 
 .neighborhood {
-  fill: #6478964d;
-  stroke: #ffffff80;
-  stroke-width: .5px;
+  fill: #f0f0f0;
+  stroke: #d0d0d0;
+  stroke-width: 1px;
   transition: fill .3s;
 }
 
 .neighborhood:hover {
-  fill: #788caa80;
+  fill: #e0e0e0;
+  stroke: #999;
 }
 
 .water {
@@ -76,7 +78,8 @@ h1 {
 #controls {
   backdrop-filter: blur(10px);
   z-index: 100;
-  background: #000000b3;
+  background: #ffffffe6;
+  border: 1px solid #eee;
   border-radius: 50px;
   align-items: center;
   gap: 20px;
@@ -86,7 +89,7 @@ h1 {
   bottom: 40px;
   left: 50%;
   transform: translateX(-50%);
-  box-shadow: 0 4px 20px #00000080;
+  box-shadow: 0 4px 20px #00000026;
 }
 
 #play-btn, #reset-zoom {
@@ -112,7 +115,7 @@ h1 {
 
 #timeline {
   cursor: pointer;
-  background: #fff3;
+  background: #0000001a;
   border-radius: 4px;
   width: 400px;
   height: 8px;
@@ -137,13 +140,14 @@ h1 {
 #legend {
   backdrop-filter: blur(10px);
   z-index: 100;
-  background: #000000b3;
+  background: #ffffffe6;
+  border: 1px solid #eee;
   border-radius: 10px;
   padding: 20px;
   position: absolute;
   top: 100px;
   right: 40px;
-  box-shadow: 0 4px 20px #0000004d;
+  box-shadow: 0 4px 20px #00000026;
 }
 
 .legend-item {
@@ -170,14 +174,15 @@ h1 {
 #stats {
   backdrop-filter: blur(10px);
   z-index: 100;
-  background: #000000b3;
+  background: #ffffffe6;
+  border: 1px solid #eee;
   border-radius: 10px;
   min-width: 200px;
   padding: 20px;
   position: absolute;
   top: 100px;
   left: 40px;
-  box-shadow: 0 4px 20px #0000004d;
+  box-shadow: 0 4px 20px #00000026;
 }
 
 .stat-item {
@@ -228,8 +233,8 @@ h1 {
 }
 
 .spinner {
-  border: 4px solid #ffffff4d;
-  border-top-color: #fff;
+  border: 4px solid #0000001a;
+  border-top-color: #333;
   border-radius: 50%;
   width: 40px;
   height: 40px;

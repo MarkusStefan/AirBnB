@@ -1,8 +1,10 @@
-<!DOCTYPE html><html lang="en"><head><script type="importmap">{"imports":{"d3lhD":"/chicago_timeseries.f51998ad.js","fuUfT":"/chicago_neighborhoods.96a0b982.geojson"}}</script>
+<!DOCTYPE html><html lang="en"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chicago AirBnB &amp; Crime Evolution</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://d3js.org/d3-hexbin.v0.2.min.js"></script>
+    <script src="https://d3js.org/d3-contour.v4.min.js"></script>
     <script src="https://unpkg.com/topojson@3"></script>
     <link rel="stylesheet" href="/chicago-map.4d663569.css">
 </head>
@@ -22,24 +24,22 @@
 
             <div id="legend" style="display: none">
                 <h3 style="margin-bottom: 15px">Legend</h3>
-                <div class="legend-item">
-                    <div class="legend-dot airbnb-dot"></div>
-                    <span>AirBnB Rental</span>
+                <!-- Dynamic Crime Legend -->
+                <div style="border-top: 1px solid #eee; margin-top: 10px; padding-top: 10px">
+                    <small style="color: #666; margin-bottom: 5px; display: block">CRIME TYPES (Click to Filter)</small>
+                    <div class="legend-item crime-filter" data-type="HOMICIDE" style="cursor: pointer"><div class="legend-dot" style="background: #d32f2f"></div><span>Homicide</span></div>
+                    <div class="legend-item crime-filter" data-type="BATTERY" style="cursor: pointer"><div class="legend-dot" style="background: #f57c00"></div><span>Battery</span></div>
+                    <div class="legend-item crime-filter" data-type="ASSAULT" style="cursor: pointer"><div class="legend-dot" style="background: #fbc02d"></div><span>Assault</span></div>
+                    <div class="legend-item crime-filter" data-type="ROBBERY" style="cursor: pointer"><div class="legend-dot" style="background: #1976d2"></div><span>Robbery</span></div>
+                    <div class="legend-item crime-filter" data-type="BURGLARY" style="cursor: pointer"><div class="legend-dot" style="background: #7b1fa2"></div><span>Burglary</span></div>
                 </div>
-                <div class="legend-item">
-                    <div class="legend-dot crime-dot"></div>
-                    <span>Homicide</span>
-                </div>
-                <div style="border-top: 1px solid #fff3; margin-top: 15px; padding-top: 15px">
+                
+                <div style="border-top: 1px solid #eee; margin-top: 15px; padding-top: 15px">
                     <small>💡 Scroll to zoom<br>🖱️ Drag to pan</small>
                 </div>
             </div>
 
             <div id="stats" style="display: none">
-                <div class="stat-item">
-                    <div>AirBnB Listings</div>
-                    <div class="stat-value airbnb-color" id="airbnb-count">0</div>
-                </div>
                 <div class="stat-item">
                     <div>Crime Incidents</div>
                     <div class="stat-value crime-color" id="crime-count">0</div>
