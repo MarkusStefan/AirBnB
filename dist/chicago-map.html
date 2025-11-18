@@ -1,62 +1,33 @@
-<!DOCTYPE html><html lang="en"><head>
+<!DOCTYPE html><html lang="en"><head><script type="module" src="/chicago_neighborhoods.4cac08d0.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chicago AirBnB &amp; Crime Evolution</title>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="https://d3js.org/d3-hexbin.v0.2.min.js"></script>
-    <script src="https://d3js.org/d3-contour.v4.min.js"></script>
-    <script src="https://unpkg.com/topojson@3"></script>
+    <title>Chicago Crime Evolution</title>
     <link rel="stylesheet" href="/chicago-map.4d663569.css">
 </head>
 <body>
     <div id="container">
         <div id="header">
-            <h1>🏙️ Chicago: AirBnB Rentals &amp; Crime Evolution</h1>
-            <div id="subtitle">Interactive Time-Series Visualization with Geographic Context (2018-2024)</div>
+            <h1>Chicago Crime Evolution</h1>
+            <div id="subtitle">2018 - 2024</div>
         </div>
 
         <div id="viz-container">
-            <div id="loading">
-                <div class="spinner"></div>
-                Loading Chicago map and data...
-            </div>
             <svg id="map"></svg>
 
-            <div id="legend" style="display: none">
-                <h3 style="margin-bottom: 15px">Legend</h3>
-                <!-- Dynamic Crime Legend -->
-                <div style="border-top: 1px solid #eee; margin-top: 10px; padding-top: 10px">
-                    <small style="color: #666; margin-bottom: 5px; display: block">CRIME TYPES (Click to Filter)</small>
-                    <div class="legend-item crime-filter" data-type="HOMICIDE" style="cursor: pointer"><div class="legend-dot" style="background: #d32f2f"></div><span>Homicide</span></div>
-                    <div class="legend-item crime-filter" data-type="BATTERY" style="cursor: pointer"><div class="legend-dot" style="background: #f57c00"></div><span>Battery</span></div>
-                    <div class="legend-item crime-filter" data-type="ASSAULT" style="cursor: pointer"><div class="legend-dot" style="background: #fbc02d"></div><span>Assault</span></div>
-                    <div class="legend-item crime-filter" data-type="ROBBERY" style="cursor: pointer"><div class="legend-dot" style="background: #1976d2"></div><span>Robbery</span></div>
-                    <div class="legend-item crime-filter" data-type="BURGLARY" style="cursor: pointer"><div class="legend-dot" style="background: #7b1fa2"></div><span>Burglary</span></div>
-                </div>
-                
-                <div style="border-top: 1px solid #eee; margin-top: 15px; padding-top: 15px">
-                    <small>💡 Scroll to zoom<br>🖱️ Drag to pan</small>
-                </div>
+            <div id="legend">
+                <h3>Crime Types</h3>
+                <div class="legend-item crime-filter" data-type="HOMICIDE"><div class="legend-dot" style="background: #d32f2f"></div><span>Homicide</span></div>
+                <div class="legend-item crime-filter" data-type="BATTERY"><div class="legend-dot" style="background: #f57c00"></div><span>Battery</span></div>
+                <div class="legend-item crime-filter" data-type="ASSAULT"><div class="legend-dot" style="background: #fbc02d"></div><span>Assault</span></div>
+                <div class="legend-item crime-filter" data-type="ROBBERY"><div class="legend-dot" style="background: #1976d2"></div><span>Robbery</span></div>
+                <div class="legend-item crime-filter" data-type="BURGLARY"><div class="legend-dot" style="background: #7b1fa2"></div><span>Burglary</span></div>
+                <div style="color: #666; margin-top: 10px; font-size: .8em">Click to filter</div>
             </div>
 
-            <div id="stats" style="display: none">
-                <div class="stat-item">
-                    <div>Crime Incidents</div>
-                    <div class="stat-value crime-color" id="crime-count">0</div>
-                </div>
-            </div>
-
-            <div id="controls" style="display: none">
-                <button id="play-btn">▶️</button>
-                <div id="timeline">
-                    <div id="timeline-progress"></div>
-                </div>
-                <div id="period-label">2018-01</div>
-                <button id="reset-zoom" title="Reset zoom">🔍</button>
+            <div id="date-display">
+                <div id="period-label">Loading...</div>
             </div>
         </div>
-
-        <div class="tooltip" id="tooltip"></div>
     </div>
 
     <script type="module" src="/chicago-map.46ca8e26.js"></script>
