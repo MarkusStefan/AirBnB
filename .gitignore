@@ -11,3 +11,7 @@ AIRBNBVENV
 crime.csv
 InfoVis25_GroupProject
 walmarts-growth/
+.parcel-cache/
+
+node_modules/
+.parcel-cache/

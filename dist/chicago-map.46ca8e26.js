@@ -766,6 +766,8 @@ let activeCrimeTypes = new Set([
 ]);
 let isPlaying = true;
 let isDensityMode = false;
+let densityOpacity = 0.3;
+let pointOpacity = 0.7;
 let currentIndex = 0;
 async function init() {
     // 1. Draw Map
@@ -814,10 +816,25 @@ async function init() {
     // Setup Density Toggle
     _d3.select("#density-toggle").on("change", function() {
         isDensityMode = this.checked;
+        _d3.select("#density-opacity-control").style("display", isDensityMode ? "flex" : "none");
+        _d3.select("#point-opacity-control").style("display", isDensityMode ? "none" : "flex");
         // Clear existing visualizations
         g.selectAll(".crime-dot").remove();
         g.selectAll(".density-path").remove();
         renderFrame(currentIndex);
+    });
+    // Setup Opacity Sliders
+    _d3.select("#density-opacity-slider").on("input", function() {
+        densityOpacity = +this.value;
+        if (isDensityMode) g.selectAll(".density-path").attr("opacity", densityOpacity);
+    });
+    _d3.select("#point-opacity-slider").on("input", function() {
+        pointOpacity = +this.value;
+        if (!isDensityMode) {
+            // Update both pulsing and static dots immediately
+            g.selectAll(".crime-dot").attr("opacity", pointOpacity);
+            g.selectAll(".crime-dot-static").attr("opacity", pointOpacity);
+        }
     });
     // 3. Animation Loop
     const label = _d3.select("#period-label");
@@ -848,7 +865,7 @@ async function init() {
                 0,
                 _d3.max(densityData, (d)=>d.value)
             ]);
-            g.selectAll(".density-path").data(densityData).join("path").attr("class", "density-path").attr("d", _d3.geoPath()).attr("fill", (d)=>densityColor(d.value)).attr("opacity", 0.6);
+            g.selectAll(".density-path").data(densityData).join("path").attr("class", "density-path").attr("d", _d3.geoPath()).attr("fill", (d)=>densityColor(d.value)).attr("opacity", densityOpacity);
         } else {
             // Points Visualization
             g.selectAll(".density-path").remove(); // Clear density
@@ -862,7 +879,7 @@ async function init() {
                     ])[0]).attr("cy", (d)=>projection([
                         d.lon,
                         d.lat
-                    ])[1]).attr("r", 0).attr("fill", (d)=>colorScale(d.type)).attr("opacity", 0.8).transition().duration(500).attr("r", 4).transition().duration(1000).attr("r", 0).attr("opacity", 0).remove();
+                    ])[1]).attr("r", 0).attr("fill", (d)=>colorScale(d.type)).attr("opacity", pointOpacity).transition().duration(500).attr("r", 4).transition().duration(1000).attr("r", 0).attr("opacity", 0).remove();
             } else {
                 // Static Mode (Paused/Scrubbing)
                 // Remove pulsing dots to avoid clutter
@@ -874,13 +891,13 @@ async function init() {
                         ])[0]).attr("cy", (d)=>projection([
                             d.lon,
                             d.lat
-                        ])[1]).attr("r", 4).attr("fill", (d)=>colorScale(d.type)).attr("opacity", 0.8), (update)=>update.attr("cx", (d)=>projection([
+                        ])[1]).attr("r", 4).attr("fill", (d)=>colorScale(d.type)).attr("opacity", pointOpacity), (update)=>update.attr("cx", (d)=>projection([
                             d.lon,
                             d.lat
                         ])[0]).attr("cy", (d)=>projection([
                             d.lon,
                             d.lat
-                        ])[1]).attr("fill", (d)=>colorScale(d.type)), (exit)=>exit.remove());
+                        ])[1]).attr("fill", (d)=>colorScale(d.type)).attr("opacity", pointOpacity), (exit)=>exit.remove());
             }
         }
     }
