@@ -31,7 +31,7 @@ python -m http.server 8000
 
 
 ## Data
-Simply run `data.ipynb` to download and prepare the data for the visualization. The processed data will be saved in the `data/` folder.
+Simply run `data.ipynb` to download and prepare the data for the visualization. The downloaded dataset (from google-drive) will be processed data saved in the `data/` folder.
 
 
 ## Vizz Details
@@ -73,7 +73,8 @@ For the actual coding work, I used GitHub Copilot (Gemini 3) as AI assistant for
 - Asked Copilot to implement custom changes, such as 
    - adding play/pause functionality for the time slider and creating filters for different crime types
    - adding "Select All" and "Deselect All" buttons for crime type filters
-   - implementing the density map overlay using D3's contour functions
+   - implementing the density map overlay using D3's contour functions + the toggle functionality between scatter and density map views
+   - adding opacity slider to adjust visualization layer visibility
    - styling the sidebar and controls for better user experience (especially the zoom behavior)
 
 
