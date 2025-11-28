@@ -56,3 +56,25 @@ Simply run `data.ipynb` to download and prepare the data for the visualization. 
    - **Spatial**: Geographic scale for mapping latitude and longitude to screen coordinates (coords omitted for simplicity)
    - **Categorial**: Color scale for different crime types
    - **Channels**: Position (x, y), Color, Opacity
+
+
+
+
+## GenAI Usage Declaration & Documentation
+Most of the work, including project structure, data preparation, visualization design and deployment was done by myself. Especially, making fine adjustments to parameters such as colors, sizes, scales, layout and so on were done manually.
+
+For the actual coding work, I used GitHub Copilot (Gemini 3) as AI assistant for the following tasks:
+
+**Code Generation**:
+- Used GenAI to generate initial code for D3.js visualization, including setting up the SVG canvas, map projection, and basic interactivity (zooming and panning).
+   - this involves the core structure of `app.js`, `index.html`, and `style.css` 
+
+**Adjustments**:
+- Asked Copilot to implement custom changes, such as 
+   - adding play/pause functionality for the time slider and creating filters for different crime types
+   - adding "Select All" and "Deselect All" buttons for crime type filters
+   - implementing the density map overlay using D3's contour functions
+   - styling the sidebar and controls for better user experience (especially the zoom behavior)
+
+
+

@@ -53,8 +53,9 @@ const zoom = d3.zoom()
 
 svg.call(zoom);
 
-// projection: Mercator centered on Chicago
-// Mercator is a good general-purpose projection
+// The Mercator projection is a cylindrical map projection 
+// introduced by Flemish cartographer Gerardus Mercator in 1569
+// https://en.wikipedia.org/wiki/Mercator_projection
 const projection = d3.geoMercator()
     .scale(1)
     .translate([0, 0]);
@@ -127,6 +128,31 @@ function setupControls() {
     
     // get selected types (+ select all per default)
     sortedTypes.forEach(t => state.selectedCrimeTypes.add(t));
+
+    // "Select All" / "Deselect All" buttons --> better usability
+    const controlsDiv = crimeFiltersContainer.append("div")
+        .style("margin-bottom", "10px");
+
+    controlsDiv.append("button")
+        .text("Select All")
+        .style("margin-right", "5px")
+        .style("font-size", "12px")
+        .style("padding", "4px 8px")
+        .on("click", () => {
+            sortedTypes.forEach(t => state.selectedCrimeTypes.add(t));
+            crimeFiltersContainer.selectAll("input[type='checkbox']").property("checked", true);
+            update();
+        });
+
+    controlsDiv.append("button")
+        .text("Deselect All")
+        .style("font-size", "12px")
+        .style("padding", "4px 8px")
+        .on("click", () => {
+            state.selectedCrimeTypes.clear();
+            crimeFiltersContainer.selectAll("input[type='checkbox']").property("checked", false);
+            update();
+        });
 
     // create checkboxes to select crime types
     sortedTypes.forEach(type => {
