@@ -4,7 +4,7 @@ import * as d3 from "d3";
 const state = {
     currentTimeIndex: 0,
     selectedCrimeTypes: new Set(),
-    opacity: 0.5,
+    opacity: 0.35,
     viewMode: 'scatter', // 'scatter' or 'density'
     isPlaying: false,
     data: null,
