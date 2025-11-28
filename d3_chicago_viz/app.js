@@ -171,7 +171,7 @@ function togglePlay() {
             state.currentTimeIndex = (state.currentTimeIndex + 1) % state.data.length;
             timeSlider.property("value", state.currentTimeIndex);
             update();
-        }, 500); // 500ms per frame
+        }, 800); // 800ms per frame
     } else {
         if (state.timer) state.timer.stop();
     }
