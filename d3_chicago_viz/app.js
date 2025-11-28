@@ -3,8 +3,6 @@ import * as d3 from "d3";
 // state mngmnt
 const state = {
     currentTimeIndex: 0,
-    endTimeIndex: 0,
-    isRangeMode: false,
     selectedCrimeTypes: new Set(),
     opacity: 0.5,
     viewMode: 'scatter', // 'scatter' or 'density'
@@ -28,9 +26,6 @@ const margin = { top: 20, right: 20, bottom: 20, left: 20 };
 // selectors
 const mapContainer = d3.select("#map-container");
 const timeSlider = d3.select("#time-slider");
-const timeSliderEnd = d3.select("#time-slider-end");
-const rangeModeCheck = d3.select("#range-mode-check");
-const endTimeContainer = d3.select("#end-time-container");
 const opacitySlider = d3.select("#opacity-slider");
 const zoomSlider = d3.select("#zoom-slider");
 const playPauseButton = d3.select("#play-pause-btn");
@@ -167,31 +162,6 @@ function setupControls() {
             update();
         });
 
-    timeSliderEnd
-        .attr("max", state.data.length - 1)
-        .attr("value", state.currentTimeIndex)
-        .on("input", function() {
-            state.endTimeIndex = +this.value;
-            update();
-        });
-
-    rangeModeCheck.on("change", function() {
-        state.isRangeMode = this.checked;
-        endTimeContainer.style("display", state.isRangeMode ? "block" : "none");
-        
-        if (state.isRangeMode) {
-            // Sync end index to slider value
-            state.endTimeIndex = +timeSliderEnd.property("value");
-            
-            // Disable play in range mode
-            if (state.isPlaying) togglePlay();
-            playPauseButton.property("disabled", true);
-        } else {
-            playPauseButton.property("disabled", false);
-        }
-        update();
-    });
-
     opacitySlider.on("input", function() {
         state.opacity = +this.value;
         update();
@@ -228,33 +198,11 @@ function togglePlay() {
 function update() {
     if (!state.data || !state.data[state.currentTimeIndex]) return;
 
-    let crimesToRender = [];
-    let displayLabel = "";
-
-    if (state.isRangeMode) {
-        const start = Math.min(state.currentTimeIndex, state.endTimeIndex);
-        const end = Math.max(state.currentTimeIndex, state.endTimeIndex);
-        
-        // Aggregate data from all frames in range
-        for (let i = start; i <= end; i++) {
-            if (state.data[i] && state.data[i].locations) {
-                crimesToRender = crimesToRender.concat(state.data[i].locations);
-            }
-        }
-
-        const startLabel = state.data[start].period || start;
-        const endLabel = state.data[end].period || end;
-        displayLabel = `${startLabel} - ${endLabel}`;
-    } else {
-        const currentFrame = state.data[state.currentTimeIndex];
-        crimesToRender = currentFrame.locations || [];
-        displayLabel = currentFrame.period || `Frame ${state.currentTimeIndex}`;
-    }
-
-    dateDisplay.text(displayLabel);
+    const currentFrame = state.data[state.currentTimeIndex];
+    dateDisplay.text(currentFrame.period || `Frame ${state.currentTimeIndex}`);
 
     // filter crimes according to selected types
-    const filteredCrimes = crimesToRender.filter(d => state.selectedCrimeTypes.has(d.type));
+    const filteredCrimes = (currentFrame.locations || []).filter(d => state.selectedCrimeTypes.has(d.type));
     // clear
     gData.selectAll("*").remove();
 
@@ -278,7 +226,7 @@ function renderScatter(crimes) {
 }
 
 function renderDensity(crimes) {
-    // Prepare data for contourDensity
+    // preprocess data for contourDensity
     const densityData = crimes.map(d => {
         const coords = projection([d.lon, d.lat]);
         return { x: coords[0], y: coords[1] };
