@@ -1,10 +1,10 @@
 import * as d3 from "d3";
 
-// State management
+// state mngmnt
 const state = {
     currentTimeIndex: 0,
     selectedCrimeTypes: new Set(),
-    opacity: 0.35,
+    opacity: 0.5,
     viewMode: 'scatter', // 'scatter' or 'density'
     isPlaying: false,
     data: null,
@@ -12,28 +12,46 @@ const state = {
     timer: null
 };
 
-// Configuration
+// config
+const scale = 110; // scaling factor for SVG size ==> kinda replaced by zoom slider
 const width = 800;
 const height = 600;
+const svgWidth = width;
+const svgHeight = height;
+const smoothness = 5; // for density map - higher values = smoother
+const thresholds = 20; // for density map - number of contour levels --> more = smoother contours
+const frameDuration = 800; // ms per frame when playing
 const margin = { top: 20, right: 20, bottom: 20, left: 20 };
 
-// Selectors
+// selectors
 const mapContainer = d3.select("#map-container");
 const timeSlider = d3.select("#time-slider");
 const opacitySlider = d3.select("#opacity-slider");
-const playPauseBtn = d3.select("#play-pause-btn");
+const zoomSlider = d3.select("#zoom-slider");
+const playPauseButton = d3.select("#play-pause-btn");
 const dateDisplay = d3.select("#date-display");
 const crimeFiltersContainer = d3.select("#crime-type-filters");
 
 // init SVG
 const svg = mapContainer.append("svg")
     // usiong 95% scaling to not cut off edges of the chicago map
-    .attr("width", "95%")
-    .attr("height", "95%")
+    .attr("width", `${scale}%`)
+    .attr("height", `${scale}%`)
     .attr("viewBox", `0 0 ${width} ${height}`);
 
 const gMap = svg.append("g");
 const gData = svg.append("g");
+
+// zoom range
+const zoom = d3.zoom()
+    .scaleExtent([0.5, 8])
+    .on("zoom", (event) => {
+        gMap.attr("transform", event.transform);
+        gData.attr("transform", event.transform);
+        zoomSlider.property("value", event.transform.k);
+    });
+
+svg.call(zoom);
 
 // projection: Mercator centered on Chicago
 // Mercator is a good general-purpose projection
@@ -43,13 +61,11 @@ const projection = d3.geoMercator()
 
 const path = d3.geoPath().projection(projection);
 
-// Color scales
 const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
 
 async function init() {
     try {
         // loading the crime data + chicago geo data
-        // Using simple relative paths which resolve relative to the HTML file location
         const [geoData, timeData] = await Promise.all([
             d3.json('../data/chicago_neighborhoods.geojson'),
             d3.json('../data/chicago_timeseries.json')
@@ -64,7 +80,7 @@ async function init() {
         // init controls (slicer, toggles, slider...)
         setupControls();
 
-        // Initial Render
+        // innit ender
         update();
 
     } catch (error) {
@@ -83,20 +99,16 @@ function setupMap() {
         .enter()
         .append("path")
         .attr("d", path)
-        .attr("fill", "#eee")
-        .attr("stroke", "#ccc")
+        .attr("fill", "#eee") // background color for districts
+        .attr("stroke", "#ccc") // district borders
         .attr("stroke-width", 1);
 }
 
 function setupControls() {
-    // 1. Crime Types
-    // Extract all unique crime types from the first few frames (or all if possible, but let's assume consistency)
-    // We'll scan the first frame to get types, or ideally we'd have a list. 
-    // Let's scan the first 10 frames to be safe or just the first one.
     const allTypes = new Set();
-    // Check if data is loaded
+    // check whether data is loaded
     if (state.data && state.data.length > 0) {
-        // Check the first few frames
+        // check initial  frames
         const limit = Math.min(state.data.length, 5);
         for (let i = 0; i < limit; i++) {
             const frame = state.data[i];
@@ -106,7 +118,7 @@ function setupControls() {
         }
     }
     
-    const sortedTypes = Array.from(allTypes).sort();
+    const sortedTypes = Array.from(allTypes).sort(); // contains all unique crime types extracted from first few rows
     
     // get selected types (+ select all per default)
     sortedTypes.forEach(t => state.selectedCrimeTypes.add(t));
@@ -128,7 +140,7 @@ function setupControls() {
             });
         label.append("span").text(` ${type}`);
         
-        // add color indicator
+        // color indicator
         label.append("span")
             .style("display", "inline-block")
             .style("width", "10px")
@@ -137,8 +149,7 @@ function setupControls() {
             .style("margin-left", "5px")
             .style("border-radius", "50%");
     });
-
-    // 2. Time Slider
+    
     timeSlider
         .attr("max", state.data.length - 1)
         .on("input", function() {
@@ -146,32 +157,34 @@ function setupControls() {
             update();
         });
 
-    // 3. Opacity Slider
     opacitySlider.on("input", function() {
         state.opacity = +this.value;
         update();
     });
 
-    // 4. View Mode
+    zoomSlider.on("input", function() {
+        svg.transition().duration(510).call(zoom.scaleTo, +this.value);
+    });
+
     d3.selectAll("input[name='view-mode']").on("change", function() {
         state.viewMode = this.value;
         update();
     });
 
-    // 5. Play/Pause
-    playPauseBtn.on("click", togglePlay);
+    
+    playPauseButton.on("click", togglePlay);
 }
 
 function togglePlay() {
     state.isPlaying = !state.isPlaying;
-    playPauseBtn.text(state.isPlaying ? "Pause" : "Play");
+    playPauseButton.text(state.isPlaying ? "Pause" : "Play");
 
     if (state.isPlaying) {
         state.timer = d3.interval(() => {
             state.currentTimeIndex = (state.currentTimeIndex + 1) % state.data.length;
             timeSlider.property("value", state.currentTimeIndex);
             update();
-        }, 800); // 800ms per frame
+        }, frameDuration);
     } else {
         if (state.timer) state.timer.stop();
     }
@@ -183,10 +196,9 @@ function update() {
     const currentFrame = state.data[state.currentTimeIndex];
     dateDisplay.text(currentFrame.period || `Frame ${state.currentTimeIndex}`);
 
-    // Filter crimes
+    // filter crimes according to selected types
     const filteredCrimes = (currentFrame.locations || []).filter(d => state.selectedCrimeTypes.has(d.type));
-
-    // Clear previous
+    // clear
     gData.selectAll("*").remove();
 
     if (state.viewMode === 'scatter') {
@@ -219,8 +231,8 @@ function renderDensity(crimes) {
         .x(d => d.x)
         .y(d => d.y)
         .size([width, height])
-        .bandwidth(20) // Adjust for smoothness
-        .thresholds(20)
+        .bandwidth(smoothness)
+        .thresholds(thresholds)
         (densityData);
 
     const densityColor = d3.scaleSequential(d3.interpolateViridis)

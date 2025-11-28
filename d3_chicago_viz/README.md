@@ -11,7 +11,13 @@ python -m http.server 8000
 ```
 
 3. Open web browser; navigate to:
-   [http://localhost:8000/src/d3_chicago_viz/index.html](http://localhost:8000/src/d3_chicago_viz/index.html)
+   [http://localhost:8000/d3_chicago_viz/index.html](http://localhost:8000/d3_chicago_viz/index.html)
+
+
+## Adjustments / Customization
+- sliders & other functionality should be in `app.js`
+- webpage for deployment is in `index.html` and consist of a sidebar for controls and main area for vizualization
+- styles are in `style.css` and can be found within `app.js` and `index.html`
 
 ## Features
 - **Chicago City Map**: Shows Chicago neighborhoods
