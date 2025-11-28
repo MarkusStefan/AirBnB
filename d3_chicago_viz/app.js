@@ -74,6 +74,11 @@ async function init() {
         state.geoData = geoData;
         state.data = timeData.crimes; // store array of frames directly
 
+        // console.log for debugging
+        // log subsets of data to verify loading
+        console.log("Geo Data:\t", state.geoData);
+        console.log("Time Data Sample:\t", state.data.slice(0, 5));
+
         // init the chicago map map
         setupMap();
 
