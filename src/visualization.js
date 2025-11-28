@@ -1,6 +1,8 @@
 import * as d3 from "d3";
-import chicagoMap from "./data/chicago_neighborhoods.json";
-import timeSeriesData from './data/chicago_timeseries.json';
+
+// Use static paths for large data files (copied by parcel-reporter-static-files-copy)
+const chicagoMapUrl = './chicago_neighborhoods.json';
+const timeSeriesDataUrl = './chicago_timeseries.json';
 
 // Configuration
 const width = window.innerWidth;
@@ -41,22 +43,16 @@ async function init() {
     console.log("Drawing map...");
     
     let features = [];
-    if (chicagoMap.features) {
-        features = chicagoMap.features;
-    } else if (chicagoMap.default && chicagoMap.default.features) {
-        features = chicagoMap.default.features;
-    } else {
-        // Fallback fetch if Parcel didn't bundle it as object
-        try {
-            const response = await fetch(new URL('./data/chicago_neighborhoods.json', import.meta.url));
-            const json = await response.json();
-            features = json.features;
-        } catch (e) {
-            console.error("Failed to load map", e);
-        }
+    
+    try {
+        const response = await fetch(chicagoMapUrl);
+        const json = await response.json();
+        features = json.features || (json.default && json.default.features);
+    } catch (e) {
+        console.error("Failed to fetch map", e);
     }
 
-    if (features.length > 0) {
+    if (features && features.length > 0) {
         g.selectAll("path")
             .data(features)
             .join("path")
@@ -79,12 +75,27 @@ async function init() {
     svg.call(zoom);
 
     // 2. Prepare Data
-    let data = timeSeriesData;
-    if (timeSeriesData.default) data = timeSeriesData.default;
+    let data = null;
+    
+    try {
+        const response = await fetch(timeSeriesDataUrl);
+        data = await response.json();
+        if (data.default) data = data.default;
+    } catch (e) {
+        console.error("Failed to fetch time series data", e);
+    }
+    
+    if (!data || !data.periods) {
+        console.error("Time series data not loaded correctly");
+        return;
+    }
     
     const periods = data.periods;
     const crimes = data.crimes;
     
+    // Hide loading overlay
+    d3.select("#loading-overlay").transition().duration(500).style("opacity", 0).remove();
+
     // Setup Slider
     const slider = d3.select("#time-slider")
         .attr("max", periods.length - 1)

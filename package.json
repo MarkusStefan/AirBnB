@@ -3,12 +3,12 @@
   "version": "1.0.0",
   "description": "AirBnB Chicago Crime Analysis with D3.js Visualizations",
   "scripts": {
-    "dev": "parcel src/chicago-map.html --open",
-    "dev:simple": "parcel src/index.html --open",
-    "build": "parcel build src/chicago-map.html --public-url ./",
+    "dev": "parcel src/index.html --open",
+    "dev:dashboard": "parcel src/dashboard.html --open",
+    "build": "parcel build src/index.html --public-url ./",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
-    "start": "parcel src/chicago-map.html"
+    "start": "parcel src/index.html"
   },
   "repository": {
     "type": "git",
@@ -32,6 +32,11 @@
   "devDependencies": {
     "@parcel/transformer-raw": "^2.16.0",
     "gh-pages": "^6.3.0",
-    "parcel": "^2.16.0"
+    "parcel": "^2.16.0",
+    "parcel-reporter-static-files-copy": "^1.5.3"
+  },
+  "staticFiles": {
+    "staticPath": "src/data",
+    "staticOutDir": "data"
   }
 }
