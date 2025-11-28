@@ -51,7 +51,7 @@ async function init() {
         // loading the crime data + chicago geo data
         // Using simple relative paths which resolve relative to the HTML file location
         const [geoData, timeData] = await Promise.all([
-            d3.json('../data/chicago_neighborhoods.json'),
+            d3.json('../data/chicago_neighborhoods.geojson'),
             d3.json('../data/chicago_timeseries.json')
         ]);
 
