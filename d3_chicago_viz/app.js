@@ -12,7 +12,7 @@ const state = {
     timer: null
 };
 
-// config
+// config (constants)
 const scale = 110; // scaling factor for SVG size ==> kinda replaced by zoom slider
 const width = 800;
 const height = 600;
