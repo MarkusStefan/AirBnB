@@ -1,9 +1,21 @@
 # Chicago Crime Vizz
-Crime evolution in Chicago districts over time.
+Crime evolution in Chicago districts over time, visualized on a city map using D3.js; featuring scatter and density map views with interactive controls; data prepared to:
 - quarterly data from 2001Q1 to 2024Q1
 - data source: https://data.cityofchicago.org/api/views/6zsd-gptz/rows.csv?accessType=DOWNLOAD
 
-## How to Run
+
+
+## Deployed Version
+#### Source Code
+The **source code** for the visualization can be found in the repository 
+[https://github.com/MarkusStefan/AirBnB/tree/d3](https://github.com/MarkusStefan/AirBnB/tree/d3) in the `d3_chicago_viz/` folder $\to$ located in the **d3** branch!
+
+#### Deployed Visualization hosted on GitHub Pages
+Find the deployed version of this visualization here: 
+   [https://markusstefan.github.io/AirBnB/d3_chicago_viz/](https://markusstefan.github.io/AirBnB/d3_chicago_viz/)
+
+
+## How to Run (locally)
 1. Open a terminal in the root of the repository (`AirBnB/`).
 2. Run the following command to start a local Python server:
 ```bash
@@ -30,7 +42,7 @@ python -m http.server 8000
 
 
 
-## Data
+## Data Prep
 Simply run `data.ipynb` to download and prepare the data for the visualization. The downloaded dataset (from google-drive) will be processed data saved in the `data/` folder.
 
 
