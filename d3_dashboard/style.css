@@ -1,0 +1,322 @@
+* {
+  box-sizing: border-box;
+}
+
+body { 
+  font-family: 'Arial', sans-serif; 
+  margin: 0; 
+  height: 100vh; 
+  display: flex; 
+  flex-direction: column;
+  background: #f5f5f5;
+}
+
+h1 {
+  text-align: center;
+  margin: 0;
+}
+
+h2 {
+  font-size: 0.95rem;
+  margin: 0 0 0.25rem 0;
+  color: #333;
+}
+
+.topbar { 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  padding: 0.5rem 1rem; 
+  border-bottom: 1px solid #ddd; 
+  background: #fff; 
+  flex-wrap: wrap;
+  gap: 0.5rem;
+} 
+
+.topbar h1 { 
+  font-size: 1.1rem; 
+} 
+
+.global-filters { 
+  display: flex; 
+  align-items: center; 
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.filter-group label { 
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.filter-group select {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.85rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+#clearFilters {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.85rem;
+  background: #666;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#clearFilters:hover {
+  background: #444;
+}
+
+.filter-status {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.dashboard {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  min-height: 0;
+}
+
+#panel-map {
+  grid-column: 1 / 2;
+  grid-row: 1 / 2;
+}
+
+#panel-scatter {
+  grid-column: 2 / 3;
+  grid-row: 1 / 2;
+}
+
+#panel-histogram {
+  grid-column: 3 / 4;
+  grid-row: 1 / 2;
+}
+
+#panel-treemap {
+  grid-column: 1 / 2;
+  grid-row: 2 / 3;
+}
+
+#panel-crimeBar {
+  grid-column: 2 / 3;
+  grid-row: 2 / 3;
+}
+
+#panel-priceByRoom {
+  grid-column: 3 / 4;
+  grid-row: 2 / 3;
+}
+
+.panel {
+  border: 1px solid #ddd;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background: #fff;
+}
+
+#panel-map .panel-content-wrapper,
+#panel-treemap .panel-content-wrapper {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  min-height: 0;
+  gap: 0.5rem;
+}
+
+#panel-map .plot-area,
+#panel-treemap .plot-area {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#panel-map .filter-sidebar,
+#panel-treemap .filter-sidebar {
+  width: 180px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.panel-hint {
+  font-size: 0.75rem;
+  color: #888;
+  margin: 0 0 0.25rem 0;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.control-row {
+  display: flex;
+  gap: 0.3rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.controls label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  min-width: 50px;
+}
+
+.controls select {
+  padding: 0.15rem 0.3rem;
+  font-size: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  flex: 1;
+  min-width: 80px;
+}
+
+#map,
+#treemap {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#histogram,
+#scatter,
+#crimeBar,
+#priceByRoom {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+
+svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.tooltip {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 1000;
+  max-width: 200px;
+}
+
+.axis-label {
+  font-size: 11px;
+  fill: #333;
+}
+
+.brush .selection {
+  fill: steelblue;
+  fill-opacity: 0.2;
+  stroke: steelblue;
+  stroke-width: 1px;
+}
+
+.crime-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: none;
+  overflow-y: auto;
+  font-size: 0.7rem;
+}
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 0.65rem;
+}
+
+.toggle-label input {
+  display: none;
+}
+
+.toggle-label .slider {
+  position: relative;
+  width: 28px;
+  height: 14px;
+  background-color: #ccc;
+  border-radius: 7px;
+  transition: background-color 0.2s;
+  --toggle-color: #4CAF50;
+  flex-shrink: 0;
+}
+
+.toggle-label .slider::before {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  left: 2px;
+  top: 2px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.toggle-label input:checked + .slider {
+  background-color: var(--toggle-color);
+}
+
+.toggle-label input:checked + .slider::before {
+  transform: translateX(14px);
+}
+
+.toggle-label.airbnb-toggle .slider {
+  --toggle-color: #1976d2;
+}
+
+.toggle-label.all-crimes-toggle .slider {
+  --toggle-color: #d32f2f;
+}
+
+.color-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.y-grid line {
+  shape-rendering: crispEdges;
+  vector-effect: non-scaling-stroke;
+  stroke-width: 1;
+  stroke-opacity: 0.25;
+}
